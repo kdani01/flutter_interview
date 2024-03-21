@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 
@@ -8,28 +10,36 @@ void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  static ValueNotifier<int?> displayedProductIndex = ValueNotifier<int?>(null);
+
+  @override
   Widget build(BuildContext context) {
+    print("rebuilt");
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(
-          title: const Text(
-            "Products",
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(1.0),
-            child: Container(
-              color: Colors.black12,
-              height: 1.0,
+        body: Stack(
+          children: [
+            ProductsPage(),
+            ValueListenableBuilder<int?>(
+              valueListenable: displayedProductIndex,
+              builder: (context, index, _) {
+                return index != null
+                    ? Positioned.fill(
+                        child: ProductDescriptionPage(index!),
+                      )
+                    : SizedBox.shrink();
+              },
             ),
-          ),
+          ],
         ),
-        body: const ProductGridView(),
-        bottomNavigationBar: const BottomMenu(),
       ),
     );
   }
@@ -53,12 +63,26 @@ class BottomMenu extends StatelessWidget {
           ),
         ),
         padding: const EdgeInsets.only(top: 5, bottom: 5),
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
-            CustomMenuButton(icon: Icons.home, label: "Feed"),
-            CustomMenuButton(icon: Icons.shopping_bag, label: "Products"),
-            CustomMenuButton(icon: Icons.person, label: "Profile"),
+            CustomMenuButton(
+              icon: Icons.home,
+              label: "Feed",
+              onPressed: () => {},
+            ),
+            CustomMenuButton(
+              icon: Icons.shopping_bag,
+              label: "Products",
+              onPressed: () => {
+                _MyAppState.displayedProductIndex.value = null,
+              },
+            ),
+            CustomMenuButton(
+              icon: Icons.person,
+              label: "Profile",
+              onPressed: () => {},
+            ),
           ],
         ),
       ),
@@ -66,20 +90,47 @@ class BottomMenu extends StatelessWidget {
   }
 }
 
+class ProductsPage extends StatelessWidget {
+  const ProductsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          "Products",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(
+            color: Colors.black12,
+            height: 1.0,
+          ),
+        ),
+      ),
+      body: const ProductGridView(),
+      bottomNavigationBar: const BottomMenu(),
+    );
+  }
+}
+
 class CustomMenuButton extends StatelessWidget {
   final IconData icon;
   final String label;
+  final Function() onPressed;
 
   const CustomMenuButton({
     super.key,
     required this.icon,
     required this.label,
+    required this.onPressed,
   });
 
   @override
   Widget build(BuildContext context) {
     return TextButton(
-      onPressed: () => {},
+      onPressed: onPressed,
       child: SizedBox(
         height: 50,
         width: MediaQuery.of(context).size.width / 5,
@@ -117,7 +168,7 @@ class ProductGridView extends StatefulWidget {
 
 class ProductGridViewState extends State<ProductGridView> {
   late ScrollController scrollController;
-  List<dynamic> productList = [];
+  static List<dynamic> productList = [];
   int numberOfDisplayedProducts = 0;
   bool isLoading = false;
 
@@ -177,65 +228,73 @@ class ProductGridViewState extends State<ProductGridView> {
       itemBuilder: (context, index) {
         if (index < productList.length) {
           final product = productList[index];
-          return GridTile(
-            child: Card(
-              clipBehavior: Clip.antiAliasWithSaveLayer,
-              semanticContainer: true,
-              shape: BeveledRectangleBorder(
-                borderRadius: BorderRadius.circular(0),
-              ),
-              elevation: 0,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  FractionallySizedBox(
-                    widthFactor: 1,
-                    child: ClipRect(
-                      child: Align(
-                        alignment: Alignment.topCenter,
-                        heightFactor: 0.5,
-                        child: SizedBox(
-                          height: 360,
-                          child: Image.network(
-                            product['thumbnail'],
-                            fit: BoxFit.cover,
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) {
-                                return child;
-                              } else {
-                                return const CircularProgressIndicator();
-                              }
-                            },
-                            errorBuilder: (context, error, stackTrace) {
-                              return const Text('Error loading image');
-                            },
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                _MyAppState.displayedProductIndex.value = index;
+              });
+            },
+            child: GridTile(
+              child: Card(
+                clipBehavior: Clip.antiAliasWithSaveLayer,
+                semanticContainer: true,
+                shape: BeveledRectangleBorder(
+                  borderRadius: BorderRadius.circular(0),
+                ),
+                elevation: 0,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    FractionallySizedBox(
+                      widthFactor: 1,
+                      child: ClipRect(
+                        child: Align(
+                          alignment: Alignment.topCenter,
+                          heightFactor: 0.5,
+                          child: SizedBox(
+                            height: 360,
+                            child: Image.network(
+                              product['thumbnail'],
+                              fit: BoxFit.cover,
+                              loadingBuilder:
+                                  (context, child, loadingProgress) {
+                                if (loadingProgress == null) {
+                                  return child;
+                                } else {
+                                  return const CircularProgressIndicator();
+                                }
+                              },
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Text('Error loading image');
+                              },
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  Container(
-                    margin: EdgeInsets.all(10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${product['title']}',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          '\$${product['price']}',
-                          style:
-                              TextStyle(color: Color.fromRGBO(40, 80, 180, 1)),
-                        ),
-                        Text(
-                          '${'${product['discountPercentage']}'.split(".").first}% · ${product['stock']} left',
-                          style: TextStyle(fontSize: 11),
-                        ),
-                      ],
-                    ),
-                  )
-                ],
+                    Container(
+                      margin: const EdgeInsets.all(10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${product['title']}',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            '\$${product['price']}',
+                            style: const TextStyle(
+                                color: Color.fromRGBO(40, 80, 180, 1)),
+                          ),
+                          Text(
+                            '${'${product['discountPercentage']}'.split(".").first}% · ${product['stock']} left',
+                            style: const TextStyle(fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
               ),
             ),
           );
@@ -243,6 +302,126 @@ class ProductGridViewState extends State<ProductGridView> {
           return const Center(child: CircularProgressIndicator());
         }
       },
+    );
+  }
+}
+
+// ignore: must_be_immutable
+class ProductDescriptionPage extends StatefulWidget {
+  ProductDescriptionPage(this.index, {super.key});
+  int index;
+
+  @override
+  State<ProductDescriptionPage> createState() => _ProductDescriptionPageState();
+}
+
+class _ProductDescriptionPageState extends State<ProductDescriptionPage> {
+  dynamic product;
+  bool isLoading = false;
+  List<Widget> images = [];
+
+  @override
+  Widget build(BuildContext context) {
+    product = ProductGridViewState.productList[widget.index];
+
+    for (String imageLink in product['images']) {
+      images.add(
+        Padding(
+          padding: const EdgeInsets.all(10),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Image.network(
+              imageLink,
+              width: 200,
+              height: 200,
+              fit: BoxFit.cover,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) {
+                  return child;
+                } else {
+                  return const CircularProgressIndicator();
+                }
+              },
+              errorBuilder: (context, error, stackTrace) {
+                return const Text('Error loading image');
+              },
+            ),
+          ),
+        ),
+      );
+    }
+
+    return MaterialApp(
+      home: Scaffold(
+        body: ListView(
+          shrinkWrap: true,
+          children: [
+            Image.network(
+              product['thumbnail'],
+              fit: BoxFit.cover,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) {
+                  return child;
+                } else {
+                  return const CircularProgressIndicator();
+                }
+              },
+              errorBuilder: (context, error, stackTrace) {
+                return const Text('Error loading image');
+              },
+            ),
+            Container(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height * 0.3,
+              margin: const EdgeInsets.all(10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 20),
+                    child: Text(
+                      "Description",
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    product["description"],
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Text(
+                    "Images",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: images,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        bottomNavigationBar: BottomMenu(),
+      ),
     );
   }
 }
