@@ -26,7 +26,10 @@ class MyApp extends StatelessWidget {
             ),
           ),
         ),
-        body: Container(),
+        body: GridView.count(
+          crossAxisCount: 2,
+          children: [],
+        ),
         bottomNavigationBar: const BottomMenu(),
       ),
     );
@@ -50,11 +53,11 @@ class BottomMenu extends StatelessWidget {
             ),
           ),
         ),
-        padding: const EdgeInsets.only(top: 10),
+        padding: const EdgeInsets.only(top: 5, bottom: 5),
         child: const Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
-            CustomMenuButton(icon: Icons.home, label: "feed"),
+            CustomMenuButton(icon: Icons.home, label: "Feed"),
             CustomMenuButton(icon: Icons.shopping_bag, label: "Products"),
             CustomMenuButton(icon: Icons.person, label: "Profile"),
           ],
@@ -83,9 +86,12 @@ class CustomMenuButton extends StatelessWidget {
         width: MediaQuery.of(context).size.width / 5,
         child: Column(
           children: [
-            Icon(
-              icon,
-              color: Colors.black,
+            Padding(
+              padding: const EdgeInsets.only(top: 5),
+              child: Icon(
+                icon,
+                color: Colors.black,
+              ),
             ),
             SizedBox(
               width: 60,
