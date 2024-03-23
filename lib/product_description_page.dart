@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_interview/bottom_menu.dart';
 import 'package:flutter_interview/products_page.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ProductDescriptionPage extends StatelessWidget {
   const ProductDescriptionPage(this.product, {super.key});
@@ -39,6 +40,11 @@ class ProductDescriptionPage extends StatelessWidget {
 
     // the page itself
     return MaterialApp(
+      theme: ThemeData(
+        textTheme: GoogleFonts.robotoTextTheme(
+          Theme.of(context).textTheme,
+        ),
+      ),
       home: Scaffold(
         body: ListView(
           shrinkWrap: true,
