@@ -1,26 +1,14 @@
-// ignore_for_file: must_be_immutable
-
 import 'package:flutter/material.dart';
 import 'package:flutter_interview/bottom_menu.dart';
-import 'package:flutter_interview/main.dart';
+import 'package:flutter_interview/products_page.dart';
 
-class ProductDescriptionPage extends StatefulWidget {
-  ProductDescriptionPage(this.index, {super.key});
-  int index;
-
-  @override
-  State<ProductDescriptionPage> createState() => _ProductDescriptionPageState();
-}
-
-class _ProductDescriptionPageState extends State<ProductDescriptionPage> {
-  dynamic product;
-  bool isLoading = false;
-  List<Widget> images = [];
+class ProductDescriptionPage extends StatelessWidget {
+  const ProductDescriptionPage(this.product, {super.key});
+  final dynamic product;
 
   @override
   Widget build(BuildContext context) {
-    product = ProductGridViewState.productList[widget.index];
-
+    List<Widget> images = [];
     // fill images list
     for (String imageLink in product['images']) {
       images.add(
