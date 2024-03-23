@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_interview/product_description_page.dart';
 import 'package:flutter_interview/products_page.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,6 +20,11 @@ class MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(
+        textTheme: GoogleFonts.robotoTextTheme(
+          Theme.of(context).textTheme,
+        ),
+      ),
       home: Scaffold(
         body: Stack(
           children: [

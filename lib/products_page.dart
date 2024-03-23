@@ -158,7 +158,7 @@ class ProductGridViewState extends State<ProductGridView> {
                                 color: Color.fromRGBO(40, 80, 180, 1)),
                           ),
                           Text(
-                            '${'${product['discountPercentage']}'.split(".").first}% · ${product['stock']} left',
+                            '${'${product['discountPercentage']}'.split(".").first}% • ${product['stock']} left',
                             style: const TextStyle(fontSize: 11),
                           ),
                         ],
