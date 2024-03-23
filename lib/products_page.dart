@@ -116,29 +116,25 @@ class ProductGridViewState extends State<ProductGridView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    FractionallySizedBox(
-                      widthFactor: 1,
-                      child: ClipRect(
-                        child: Align(
-                          alignment: Alignment.topCenter,
-                          heightFactor: 0.5,
-                          child: SizedBox(
-                            height: 360,
-                            child: Image.network(
-                              product['thumbnail'],
-                              fit: BoxFit.cover,
-                              loadingBuilder:
-                                  (context, child, loadingProgress) {
-                                if (loadingProgress == null) {
-                                  return child;
-                                } else {
-                                  return const CircularProgressIndicator();
-                                }
-                              },
-                              errorBuilder: (context, error, stackTrace) {
-                                return const Text('Error loading image');
-                              },
-                            ),
+                    ClipRect(
+                      child: Align(
+                        alignment: Alignment.topCenter,
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 0.22 * MediaQuery.of(context).size.height,
+                          child: Image.network(
+                            product['thumbnail'],
+                            fit: BoxFit.cover,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) {
+                                return child;
+                              } else {
+                                return const CircularProgressIndicator();
+                              }
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Text('Error loading image');
+                            },
                           ),
                         ),
                       ),
